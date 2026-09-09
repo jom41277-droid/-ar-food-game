@@ -2,19 +2,13 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>เกมคัดแยกอาหาร</title>
-
 <style>
-
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
-
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -23,705 +17,357 @@ body {
     overflow: hidden;
     touch-action: manipulation;
 }
-
 #game {
     position: fixed;
     inset: 0;
     overflow: hidden;
-    background:
-        linear-gradient(180deg, #38bdf8 0%, #7dd3fc 45%, #dcfce7 45%, #bbf7d0 100%);
+    background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 45%, #dcfce7 45%, #bbf7d0 100%);
 }
-
-/* =====================
-   TOP BAR
-===================== */
-
 #topBar {
     position: absolute;
     top: env(safe-area-inset-top, 10px);
     left: 12px;
     right: 12px;
     z-index: 20;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
-
 .box {
     background: rgba(15, 23, 42, 0.88);
     border: 3px solid white;
     border-radius: 18px;
     padding: 10px 16px;
-
     font-size: 20px;
     font-weight: bold;
     color: white;
-
     box-shadow: 0 4px 10px rgba(0,0,0,.25);
 }
-
 #soundButton {
     cursor: pointer;
     touch-action: manipulation;
 }
-
-/* =====================
-   GAME AREA
-===================== */
-
 #gameArea {
     position: absolute;
     top: 85px;
     bottom: 150px;
     left: 0;
     right: 0;
-
     overflow: hidden;
 }
-
-/* =====================
-   FOOD
-===================== */
-
 .food {
     position: absolute;
-
-    width: 105px;
-    min-height: 105px;
-
+    width: 95px;
+    min-height: 95px;
     display: flex;
     flex-direction: column;
-
     justify-content: center;
     align-items: center;
-
     background: rgba(255,255,255,.94);
-
     border: 4px solid white;
     border-radius: 25px;
-
     box-shadow: 0 8px 15px rgba(0,0,0,.25);
-
     cursor: pointer;
-
     touch-action: manipulation;
-
     user-select: none;
-
-    transition:
-        transform .15s,
-        box-shadow .15s;
+    transition: transform .15s, box-shadow .15s;
 }
-
 .food:active {
     transform: scale(.95);
 }
-
 .foodEmoji {
-    font-size: 48px;
+    font-size: 42px;
     line-height: 1;
 }
-
 .foodName {
-    margin-top: 6px;
-
-    font-size: 15px;
+    margin-top: 4px;
+    font-size: 14px;
     font-weight: bold;
-
     color: #111827;
-
     text-align: center;
 }
-
 .food.selected {
     border-color: #facc15;
-
     transform: scale(1.12);
-
-    box-shadow:
-        0 0 0 6px rgba(250,204,21,.55),
-        0 10px 20px rgba(0,0,0,.3);
+    box-shadow: 0 0 0 6px rgba(250,204,21,.55), 0 10px 20px rgba(0,0,0,.3);
 }
-
-/* =====================
-   BASKETS
-===================== */
-
 #baskets {
     position: absolute;
-
     bottom: 15px;
     left: 10px;
     right: 10px;
-
     z-index: 15;
-
     display: flex;
-
     gap: 10px;
 }
-
 .basket {
     flex: 1;
-
     min-height: 120px;
-
     border: 5px solid white;
     border-radius: 25px;
-
     display: flex;
-
     flex-direction: column;
-
     justify-content: center;
     align-items: center;
-
     color: white;
-
-    font-size: 20px;
-
+    font-size: 18px;
     font-weight: bold;
-
     text-align: center;
-
     cursor: pointer;
-
     touch-action: manipulation;
-
-    box-shadow:
-        0 7px 15px rgba(0,0,0,.25);
-
+    box-shadow: 0 7px 15px rgba(0,0,0,.25);
     transition: transform .15s;
 }
-
 .basket:active {
     transform: scale(.96);
 }
-
 #healthyBasket {
     background: #16a34a;
 }
-
 #toxicBasket {
     background: #2563eb;
 }
-
 .basketIcon {
-    font-size: 42px;
+    font-size: 38px;
 }
-
-/* =====================
-   FEEDBACK
-===================== */
-
 #feedback {
     position: absolute;
-
     top: 95px;
     left: 50%;
-
-    transform:
-        translateX(-50%)
-        translateY(-20px);
-
+    transform: translateX(-50%) translateY(-20px);
     z-index: 50;
-
-    padding: 14px 22px;
-
+    padding: 12px 20px;
     border-radius: 20px;
-
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
-
     text-align: center;
-
     opacity: 0;
-
     pointer-events: none;
-
-    transition:
-        opacity .25s,
-        transform .25s;
-
+    transition: opacity .25s, transform .25s;
     white-space: nowrap;
 }
-
 #feedback.show {
     opacity: 1;
-
-    transform:
-        translateX(-50%)
-        translateY(0);
+    transform: translateX(-50%) translateY(0);
 }
-
-/* =====================
-   START SCREEN
-===================== */
-
 #startScreen {
     position: absolute;
-
     inset: 0;
-
     z-index: 100;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(15,23,42,.97),
-            rgba(30,41,59,.97)
-        );
-
+    background: linear-gradient(135deg, rgba(15,23,42,.97), rgba(30,41,59,.97));
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     justify-content: center;
-
     text-align: center;
-
     padding: 25px;
 }
-
 #startScreen h1 {
     margin: 0 0 15px;
-
-    font-size: 36px;
-
+    font-size: 34px;
     color: #facc15;
 }
-
 #startScreen p {
-    font-size: 19px;
-
-    line-height: 1.6;
-
+    font-size: 18px;
+    line-height: 1.5;
     max-width: 550px;
 }
-
-/* =====================
-   LEVELS
-===================== */
-
 #levels {
     display: flex;
-
     justify-content: center;
-
     gap: 10px;
-
     flex-wrap: wrap;
-
     margin: 15px 0 20px;
 }
-
 .levelButton {
-    padding: 13px 18px;
-
+    padding: 12px 18px;
     border: 3px solid white;
-
     border-radius: 18px;
-
     background: #334155;
-
     color: white;
-
-    font-size: 18px;
-
+    font-size: 17px;
     font-weight: bold;
-
     cursor: pointer;
-
     touch-action: manipulation;
 }
-
 .levelButton.active {
     background: #facc15;
-
     color: #111827;
 }
-
-/* =====================
-   START BUTTON
-===================== */
-
 #startButton {
-    padding: 20px 38px;
-
+    padding: 18px 36px;
     border: 5px solid white;
-
     border-radius: 28px;
-
     background: #facc15;
-
     color: #111827;
-
-    font-size: 28px;
-
+    font-size: 26px;
     font-weight: 900;
-
     cursor: pointer;
-
     touch-action: manipulation;
-
-    box-shadow:
-        0 8px 20px rgba(0,0,0,.3);
+    box-shadow: 0 8px 20px rgba(0,0,0,.3);
 }
-
 #startButton:active {
     transform: scale(.96);
 }
-
-/* =====================
-   INSTRUCTION
-===================== */
-
 #instruction {
     margin-top: 15px;
-
     color: #cbd5e1;
-
-    font-size: 16px;
+    font-size: 15px;
 }
-
-/* =====================
-   RESPONSIVE
-===================== */
-
-@media (max-width: 420px) {
-
-    #startScreen h1 {
-        font-size: 30px;
-    }
-
-    #startScreen p {
-        font-size: 17px;
-    }
-
-    .food {
-        width: 90px;
-        min-height: 90px;
-    }
-
-    .foodEmoji {
-        font-size: 42px;
-    }
-
-    .foodName {
-        font-size: 13px;
-    }
-
-    .basket {
-        min-height: 105px;
-        font-size: 17px;
-    }
-
-    .basketIcon {
-        font-size: 35px;
-    }
-
-}
-
 </style>
 </head>
-
 <body>
 
 <div id="game">
-
-    <!-- TOP BAR -->
-
     <div id="topBar">
-
-        <div class="box">
-            คะแนน:
-            <span id="score">0</span>
-        </div>
-
-        <button
-            id="soundButton"
-            class="box">
-            🔊 เสียง
-        </button>
-
+        <div class="box">คะแนน: <span id="score">0</span></div>
+        <button id="soundButton" class="box">🔊 เสียง</button>
     </div>
-
-
-    <!-- FEEDBACK -->
 
     <div id="feedback"></div>
-
-
-    <!-- GAME AREA -->
-
     <div id="gameArea"></div>
 
-
-    <!-- BASKETS -->
-
     <div id="baskets">
-
-        <button
-            id="healthyBasket"
-            class="basket">
-
-            <div class="basketIcon">
-                🟢
-            </div>
-
-            <div>
-                อาหารมีประโยชน์
-            </div>
-
+        <button id="healthyBasket" class="basket">
+            <div class="basketIcon">🟢</div>
+            <div>อาหารมีประโยชน์</div>
         </button>
-
-
-        <button
-            id="toxicBasket"
-            class="basket">
-
-            <div class="basketIcon">
-                🔵
-            </div>
-
-            <div>
-                อาหารเป็นพิษ
-            </div>
-
+        <button id="toxicBasket" class="basket">
+            <div class="basketIcon">🔵</div>
+            <div>อาหารเป็นพิษ</div>
         </button>
-
     </div>
-
-
-    <!-- START SCREEN -->
 
     <div id="startScreen">
-
-        <h1>
-            🍎 เกมคัดแยกอาหาร ☠️
-        </h1>
-
-        <p>
-            แตะอาหารที่ต้องการเลือก
-            แล้วแตะตะกร้าที่ถูกต้อง
-        </p>
-
-        <p>
-            🟢 ซ้าย = อาหารมีประโยชน์<br>
-            🔵 ขวา = อาหารเป็นพิษ
-        </p>
-
-
-        <h2>
-            เลือกระดับความยาก
-        </h2>
-
-
+        <h1>🍎 เกมคัดแยกอาหาร ☠️</h1>
+        <p>แตะอาหารที่ต้องการเลือก แล้วแตะตะกร้าที่ถูกต้อง</p>
+        <p>🟢 ซ้าย = อาหารมีประโยชน์<br>🔵 ขวา = อาหารเป็นพิษ</p>
+        <h2>เลือกระดับความยาก</h2>
         <div id="levels">
-
-            <button
-                class="levelButton active"
-                data-level="easy">
-
-                😊 ง่าย
-
-            </button>
-
-
-            <button
-                class="levelButton"
-                data-level="medium">
-
-                😎 กลาง
-
-            </button>
-
-
-            <button
-                class="levelButton"
-                data-level="hard">
-
-                🔥 ยาก
-
-            </button>
-
+            <button class="levelButton active" data-level="easy">😊 ง่าย</button>
+            <button class="levelButton" data-level="medium">😎 กลาง</button>
+            <button class="levelButton" data-level="hard">🔥 ยาก</button>
         </div>
-
-
-        <button id="startButton">
-
-            ▶ เริ่มเล่นเกม
-
-        </button>
-
-
-        <div id="instruction">
-
-            ไม่ต้องใช้กล้อง สามารถเล่นได้ทันที
-
-        </div>
-
+        <button id="startButton">▶ เริ่มเล่นเกม</button>
+        <div id="instruction">ไม่ต้องใช้กล้อง สามารถเล่นได้ทันที</div>
     </div>
-
 </div>
 
-
 <script>
-
-/* =====================
-   ELEMENTS
-===================== */
-
-const gameArea =
-document.getElementById("gameArea");
-
-const startScreen =
-document.getElementById("startScreen");
-
-const startButton =
-document.getElementById("startButton");
-
-const scoreElement =
-document.getElementById("score");
-
-const feedback =
-document.getElementById("feedback");
-
-const soundButton =
-document.getElementById("soundButton");
-
-const healthyBasket =
-document.getElementById("healthyBasket");
-
-const toxicBasket =
-document.getElementById("toxicBasket");
-
-
-/* =====================
-   GAME VARIABLES
-===================== */
+const gameArea = document.getElementById("gameArea");
+const startScreen = document.getElementById("startScreen");
+const startButton = document.getElementById("startButton");
+const scoreElement = document.getElementById("score");
+const feedback = document.getElementById("feedback");
+const soundButton = document.getElementById("soundButton");
+const levelButtons = document.querySelectorAll(".levelButton");
 
 let score = 0;
-
 let gameRunning = false;
-
 let selectedLevel = "easy";
-
-let selectedFood = null;
-
+let selectedFoodElement = null;
+let selectedFoodData = null;
 let soundEnabled = true;
-
-let spawnTimer = null;
-
-
-/* =====================
-   FOOD DATA
-===================== */
+let spawnInterval = null;
+let animFrameId = null;
+let activeFoods = [];
 
 const foods = [
-
-    {
-        name: "แอปเปิ้ล",
-        emoji: "🍎",
-        type: "healthy"
-    },
-
-    {
-        name: "กล้วย",
-        emoji: "🍌",
-        type: "healthy"
-    },
-
-    {
-        name: "แครอท",
-        emoji: "🥕",
-        type: "healthy"
-    },
-
-    {
-        name: "บรอกโคลี",
-        emoji: "🥦",
-        type: "healthy"
-    },
-
-    {
-        name: "ส้ม",
-        emoji: "🍊",
-        type: "healthy"
-    },
-
-    {
-        name: "เห็ดพิษ",
-        emoji: "🍄",
-        type: "toxic"
-    },
-
-    {
-        name: "สารเคมี",
-        emoji: "🧪",
-        type: "toxic"
-    },
-
-    {
-        name: "อาหารบูด",
-        emoji: "🤢",
-        type: "toxic"
-    },
-
-    {
-        name: "ยาพิษ",
-        emoji: "☠️",
-        type: "toxic"
-    }
-
+    { name: "แอปเปิ้ล", emoji: "🍎", type: "healthy" },
+    { name: "กล้วย", emoji: "🍌", type: "healthy" },
+    { name: "แครอท", emoji: "🥕", type: "healthy" },
+    { name: "บรอกโคลี", emoji: "🥦", type: "healthy" },
+    { name: "ส้ม", emoji: "🍊", type: "healthy" },
+    { name: "เห็ดพิษ", emoji: "🍄", type: "toxic" },
+    { name: "สารเคมี", emoji: "🧪", type: "toxic" },
+    { name: "อาหารบูด", emoji: "🤢", type: "toxic" },
+    { name: "ยาพิษ", emoji: "☠️", type: "toxic" }
 ];
 
-
-/* =====================
-   LEVEL SETTINGS
-===================== */
-
 function getSettings() {
-
-    if (
-        selectedLevel === "easy"
-    ) {
-
-        return {
-            speed: 16,
-            spawn: 3000,
-            maxFoods: 2
-        };
-
-    }
-
-
-    if (
-        selectedLevel === "medium"
-    ) {
-
-        return {
-            speed: 12,
-            spawn: 2200,
-            maxFoods: 3
-        };
-
-    }
-
-
-    return {
-
-        speed: 8,
-        spawn: 1500,
-        maxFoods: 4
-
-    };
-
+    if (selectedLevel === "easy") return { speed: 1.2, spawnTime: 3000, maxFoods: 3 };
+    if (selectedLevel === "medium") return { speed: 2.0, spawnTime: 2200, maxFoods: 4 };
+    return { speed: 3.0, spawnTime: 1500, maxFoods: 5 };
 }
 
+// เสียงเอฟเฟกต์ด้วย Web Audio API
+function playSound(type) {
+    if (!soundEnabled) return;
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
 
-/* =====================
+        if (type === "correct") {
+            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        } else if (type === "wrong") {
+            osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+    } catch(e) {}
+}
+
+// เลือกเลเวล
+levelButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        levelButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedLevel = btn.getAttribute("data-level");
+    });
+});
+
+// เปิด/ปิดเสียง
+soundButton.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    soundButton.textContent = soundEnabled ? "🔊 เสียง" : "🔇 ปิดเสียง";
+});
+
+// เริ่มเกม
+startButton.addEventListener("click", () => {
+    startScreen.style.display = "none";
+    score = 0;
+    scoreElement.textContent = score;
+    gameRunning = true;
+    activeFoods = [];
+    gameArea.innerHTML = "";
+    selectedFoodElement = null;
+    selectedFoodData = null;
+
+    startGameLoop();
+});
+
+// สร้างชิ้นอาหารสุ่มตกลงมา
+function spawnFood() {
+    if (!gameRunning) return;
+    const settings = getSettings();
+    if (activeFoods.length >= settings.maxFoods) return;
+
+    const randomData = foods[Math.floor(Math.random() * foods.length)];
+    const foodEl = document.createElement("div");
+    foodEl.className = "food";
+    foodEl.innerHTML = `
+        <div class="foodEmoji">${randomData.emoji}</div>
+        <div class="foodName">${randomData.name}</div>
+    `;
+
+    const areaWidth = gameArea.clientWidth - 100;
+    const randomX = Math.max(10, Math.floor(Math.random() * areaWidth));
+    foodEl.style.left = randomX + "px";
+    foodEl.style.top = "-110px";
+
+    foodEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".food").forEach(f => f.classList.remove("selected"));
+        foodEl.classLi
