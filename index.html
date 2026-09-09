@@ -1,323 +1,667 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
-<title>เกมคัดแยกอาหาร AR UDL - Version 2</title>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- MediaPipe Hands -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<style>
-* {
-    -webkit-tap-highlight-color: transparent;
-    box-sizing: border-box;
-}
-html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #0f172a;
-    font-family: Arial, "Sarabun", sans-serif;
-}
-body {
-    user-select: none;
-    -webkit-user-select: none;
-}
-#game-container {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-    background: #000;
-}
-#input_video {
-    display: none;
-}
-#output_canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: #000;
-}
-.safe-top {
-    padding-top: max(12px, env(safe-area-inset-top));
-}
-.safe-bottom {
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
-.overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    background: rgba(0,0,0,.82);
-    backdrop-filter: blur(8px);
-    overflow-y: auto;
-}
-.hidden-overlay {
-    display: none !important;
-}
-.panel {
-    width: min(96%, 680px);
-    max-height: 92dvh;
-    overflow-y: auto;
-    background: rgba(15,23,42,.98);
-    border: 4px solid #facc15;
-    border-radius: 28px;
-    padding: 22px;
-    text-align: center;
-}
-.level-btn {
-    transition: .2s;
-    border: 4px solid transparent;
-}
-.level-btn.selected {
-    border-color: #facc15;
-    transform: scale(1.04);
-    box-shadow: 0 0 25px rgba(250,204,21,.6);
-}
-button {
-    touch-action: manipulation;
-}
-@keyframes pulse {
-    0%,100% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-}
-.pulse {
-    animation: pulse 1.2s infinite;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>เกมคัดแยกอาหาร AR</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      overflow: hidden;
+      color: white;
+    }
+
+    #gameContainer {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: black;
+    }
+
+    #output_canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .ui {
+      position: absolute;
+      z-index: 10;
+    }
+
+    #topBar {
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .box {
+      background: rgba(0,0,0,.75);
+      border: 3px solid white;
+      border-radius: 18px;
+      padding: 10px 16px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    #soundBtn {
+      pointer-events: auto;
+      cursor: pointer;
+      border: none;
+    }
+
+    #feedback {
+      position: absolute;
+      top: 85px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      font-size: 26px;
+      font-weight: bold;
+      padding: 12px 22px;
+      border-radius: 20px;
+      display: none;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    #startOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: rgba(0,0,0,.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 25px;
+    }
+
+    #startOverlay h1 {
+      color: #facc15;
+      font-size: 34px;
+      margin-bottom: 15px;
+      font-weight: 900;
+    }
+
+    #startOverlay p {
+      font-size: 19px;
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .levelBox {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .levelBtn {
+      border: 3px solid white;
+      border-radius: 15px;
+      padding: 12px 18px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #334155;
+      color: white;
+    }
+
+    .levelBtn.active {
+      background: #facc15;
+      color: #111827;
+    }
+
+    #startBtn {
+      background: #facc15;
+      color: #111827;
+      border: 4px solid white;
+      border-radius: 25px;
+      padding: 18px 35px;
+      font-size: 28px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    #statusText {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #cbd5e1;
+    }
+  </style>
 </head>
+
 <body>
-<div id="game-container">
-<video id="input_video" playsinline muted autoplay></video>
-<canvas id="output_canvas"></canvas>
-<!-- คะแนน / เวลา / ด่าน -->
-<div class="absolute top-0 left-0 right-0 z-20 safe-top px-3 pointer-events-none">
-    <div class="flex justify-between items-start gap-2">
-        <div class="bg-black/75 border-4 border-green-500 rounded-2xl px-4 py-2">
-            <div class="text-green-300 text-xs font-bold">คะแนน</div>
-            <div id="score-text" class="text-white text-3xl font-black text-center">0</div>
-        </div>
-        <div class="bg-black/75 border-4 border-yellow-400 rounded-2xl px-4 py-2">
-            <div class="text-yellow-200 text-xs font-bold">ด่าน</div>
-            <div id="level-text" class="text-white text-xl font-black text-center">ง่าย</div>
-        </div>
-        <div class="bg-black/75 border-4 border-red-400 rounded-2xl px-4 py-2">
-            <div class="text-red-200 text-xs font-bold">เวลา</div>
-            <div id="time-text" class="text-white text-3xl font-black text-center">60</div>
-        </div>
+
+<div id="gameContainer">
+
+  <video
+    id="input_video"
+    playsinline
+    muted
+    style="display:none">
+  </video>
+
+  <canvas id="output_canvas"></canvas>
+
+  <div id="topBar" class="ui">
+
+    <div class="box">
+      คะแนน: <span id="score">0</span>
     </div>
-</div>
-<!-- ปุ่มเสียง -->
-<button id="sound-btn"
-    class="absolute top-28 right-3 z-30 bg-black/80 border-3 border-white text-white
-    text-3xl px-4 py-3 rounded-2xl">
-    🔊
-</button>
-<!-- Feedback -->
-<div class="absolute top-32 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-    <div id="feedback-message"
-        class="opacity-0 scale-90 transition-all duration-300
-        text-white text-2xl font-black px-5 py-3 rounded-2xl
-        text-center whitespace-nowrap">
+
+    <button id="soundBtn" class="box">
+      🔊 เสียง
+    </button>
+
+  </div>
+
+  <div id="feedback"></div>
+
+  <!-- หน้าเริ่มเกม -->
+
+  <div id="startOverlay">
+
+    <h1>
+      🍎 เกมคัดแยกอาหาร ☠️
+    </h1>
+
+    <p>
+      ใช้นิ้วชี้แตะอาหารให้อาหารติดนิ้ว
+      แล้วนำไปวางในตะกร้าที่ถูกต้อง
+    </p>
+
+    <p style="color:#4ade80;font-weight:bold;">
+      🟢 สีเขียว = อาหารมีประโยชน์
+    </p>
+
+    <p style="color:#60a5fa;font-weight:bold;">
+      🔵 สีน้ำเงิน = อาหารเป็นพิษ
+    </p>
+
+    <h2 style="font-size:22px;font-weight:bold;margin-bottom:10px;">
+      เลือกระดับ
+    </h2>
+
+    <div class="levelBox">
+
+      <button
+        class="levelBtn active"
+        data-level="easy">
+        😊 ง่าย
+      </button>
+
+      <button
+        class="levelBtn"
+        data-level="medium">
+        😎 กลาง
+      </button>
+
+      <button
+        class="levelBtn"
+        data-level="hard">
+        🔥 ยาก
+      </button>
+
     </div>
-</div>
-<!-- คำแนะนำ -->
-<div class="absolute bottom-0 left-0 right-0 z-20 safe-bottom px-3 pointer-events-none">
-    <div class="flex justify-center">
-        <div class="bg-black/70 border-2 border-white/50 rounded-2xl
-        px-4 py-2 text-white text-center font-bold text-sm">
-            🤏 บีบนิ้วโป้งกับนิ้วชี้เพื่อจับ • ✋ ปล่อยเพื่อวาง
-        </div>
+
+    <button id="startBtn">
+      ▶ เริ่มเล่นเกม
+    </button>
+
+    <div id="statusText">
+      กดเริ่มเกมเพื่อเปิดกล้อง
     </div>
+
+  </div>
+
 </div>
-<!-- START SCREEN -->
-<div id="start-overlay" class="overlay">
-    <div class="panel">
-        <h1 class="text-4xl font-black text-yellow-400 mb-3">
-            🍎 เกมคัดแยกอาหาร
-        </h1>
-        <p class="text-white text-lg mb-5">
-            🤏 บีบนิ้วโป้งกับนิ้วชี้เพื่อจับอาหาร
-            <br>
-            ✋ ปล่อยนิ้วเพื่อวางลงตะกร้า
-        </p>
-        <h2 class="text-2xl font-black text-white mb-3">
-            เลือกระดับความยาก
-        </h2>
-        <div class="grid grid-cols-3 gap-3 mb-6">
-            <button class="level-btn selected bg-green-500 text-white font-black rounded-2xl p-4"
-                data-level="easy">
-                😊
-                <br>
-                ง่าย
-            </button>
-            <button class="level-btn bg-yellow-500 text-white font-black rounded-2xl p-4"
-                data-level="medium">
-                😎
-                <br>
-                กลาง
-            </button>
-            <button class="level-btn bg-red-500 text-white font-black rounded-2xl p-4"
-                data-level="hard">
-                🔥
-                <br>
-                ยาก
-            </button>
-        </div>
-        <div class="text-gray-200 text-sm mb-5">
-            🟢 ตะกร้าเขียว = อาหารมีประโยชน์
-            <br>
-            🔵 ตะกร้าน้ำเงิน = อาหาร / สิ่งอันตราย
-        </div>
-        <button id="start-btn"
-            class="pulse w-full bg-yellow-400 text-slate-900
-            text-2xl font-black py-5 rounded-3xl border-4 border-white">
-            ▶ เริ่มเกม
-        </button>
-        <p id="camera-status"
-            class="text-gray-300 text-sm mt-4">
-            กรุณาอนุญาตให้เว็บไซต์ใช้กล้อง
-        </p>
-    </div>
-</div>
-<!-- GAME OVER -->
-<div id="gameover-overlay" class="overlay hidden-overlay">
-    <div class="panel">
-        <h1 class="text-5xl font-black text-yellow-400 mb-4">
-            🏆 จบเกม!
-        </h1>
-        <p class="text-white text-xl">
-            คะแนนของคุณ
-        </p>
-        <div id="final-score"
-            class="text-7xl font-black text-green-400 my-4">
-            0
-        </div>
-        <p id="result-message"
-            class="text-white text-xl mb-6">
-        </p>
-        <button id="restart-btn"
-            class="w-full bg-green-500 text-white text-2xl
-            font-black py-5 rounded-3xl border-4 border-white">
-            🔄 เล่นอีกครั้ง
-        </button>
-    </div>
-</div>
-</div>
+
+
 <script>
-/* =====================================================
-   ELEMENTS
-===================================================== */
-const videoElement = document.getElementById("input_video");
-const canvasElement = document.getElementById("output_canvas");
-const canvasCtx = canvasElement.getContext("2d");
-const scoreText = document.getElementById("score-text");
-const timeText = document.getElementById("time-text");
-const levelText = document.getElementById("level-text");
-const feedbackMessage = document.getElementById("feedback-message");
-const startOverlay = document.getElementById("start-overlay");
-const gameOverOverlay = document.getElementById("gameover-overlay");
-const startButton = document.getElementById("start-btn");
-const restartButton = document.getElementById("restart-btn");
-const soundButton = document.getElementById("sound-btn");
-const cameraStatus = document.getElementById("camera-status");
-const finalScore = document.getElementById("final-score");
-const resultMessage = document.getElementById("result-message");
-/* =====================================================
-   GAME VARIABLES
-===================================================== */
+
 let score = 0;
-let timeLeft = 60;
 let gameRunning = false;
-let cameraStarted = false;
-let soundEnabled = true;
+
 let selectedLevel = "easy";
-let gameTimer = null;
-let spawnTimer = null;
+
+let soundEnabled = true;
+
+let handPresent = false;
+
 let handX = 0;
 let handY = 0;
-let isHandPresent = false;
-let isPinching = false;
+
 let draggedItem = null;
-let fallingItems = [];
-/* =====================================================
-   LEVEL SETTINGS
-===================================================== */
-const levelSettings = {
-    easy: {
-        name: "ง่าย",
-        time: 60,
-        spawnTime: 2800,
-        minSpeed: 0.0008,
-        maxSpeed: 0.0015,
-        maxItems: 2
-    },
-    medium: {
-        name: "กลาง",
-        time: 60,
-        spawnTime: 1800,
-        minSpeed: 0.0015,
-        maxSpeed: 0.0025,
-        maxItems: 3
-    },
-    hard: {
-        name: "ยาก",
-        time: 60,
-        spawnTime: 1100,
-        minSpeed: 0.0025,
-        maxSpeed: 0.004,
-        maxItems: 5
-    }
-};
-/* =====================================================
-   FOOD DATA
-===================================================== */
+
+let cameraStarted = false;
+
+let hands;
+let camera;
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const video = document.getElementById("input_video");
+
+const canvas = document.getElementById("output_canvas");
+
+const ctx = canvas.getContext("2d");
+
+const scoreText = document.getElementById("score");
+
+const feedback = document.getElementById("feedback");
+
+const startOverlay = document.getElementById("startOverlay");
+
+const startBtn = document.getElementById("startBtn");
+
+const statusText = document.getElementById("statusText");
+
+const soundBtn = document.getElementById("soundBtn");
+
+
+/* =========================
+   FOOD
+========================= */
+
 const foodList = [
-    { name: "แอปเปิ้ล", type: "healthy", emoji: "🍎" },
-    { name: "กล้วย", type: "healthy", emoji: "🍌" },
-    { name: "บรอกโคลี", type: "healthy", emoji: "🥦" },
-    { name: "แครอท", type: "healthy", emoji: "🥕" },
-    { name: "ปลา", type: "healthy", emoji: "🐟" },
-    { name: "นม", type: "healthy", emoji: "🥛" },
-    { name: "อาหารบูด", type: "toxic", emoji: "🤢" },
-    { name: "อาหารหมดอายุ", type: "toxic", emoji: "⚠️" },
-    { name: "เห็ดอันตราย", type: "toxic", emoji: "🍄" },
-    { name: "สารเคมี", type: "toxic", emoji: "🧪" }
+
+  {
+    name: "แอปเปิ้ล",
+    type: "healthy",
+    emoji: "🍎"
+  },
+
+  {
+    name: "กล้วย",
+    type: "healthy",
+    emoji: "🍌"
+  },
+
+  {
+    name: "แครอท",
+    type: "healthy",
+    emoji: "🥕"
+  },
+
+  {
+    name: "บรอกโคลี",
+    type: "healthy",
+    emoji: "🥦"
+  },
+
+  {
+    name: "เห็ดพิษ",
+    type: "toxic",
+    emoji: "☠️"
+  },
+
+  {
+    name: "สารเคมี",
+    type: "toxic",
+    emoji: "🧪"
+  },
+
+  {
+    name: "อาหารบูด",
+    type: "toxic",
+    emoji: "🤢"
+  }
+
 ];
-/* =====================================================
-   BASKETS
-===================================================== */
-const baskets = {
-    healthy: {
-        x: 0.25,
-        y: 0.78,
-        width: 0.42,
-        height: 0.20,
-        color: "#16a34a",
-        text: "อาหารมีประโยชน์"
-    },
-    toxic: {
-        x: 0.75,
-        y: 0.78,
-        width: 0.42,
-        height: 0.20,
-        color: "#2563eb",
-        text: "อาหาร / สิ่งอันตราย"
-    }
-};
-/* =====================================================
-   SPEECH THAI
-===================================================== */
+
+let items = [];
+
+
+/* =========================
+   LEVEL SETTINGS
+========================= */
+
+function getLevelSettings() {
+
+  if (selectedLevel === "easy") {
+
+    return {
+      speed: 0.0015,
+      spawn: 3000
+    };
+
+  }
+
+  if (selectedLevel === "medium") {
+
+    return {
+      speed: 0.0025,
+      spawn: 2200
+    };
+
+  }
+
+  return {
+
+    speed: 0.004,
+    spawn: 1500
+
+  };
+
+}
+
+
+/* =========================
+   SPEECH
+========================= */
+
 function speak(text) {
-    if (!soundEnabled) return;
-    if (!("speechSynthesis" in window)
+
+  if (!soundEnabled) return;
+
+  if (!("speechSynthesis" in window)) return;
+
+  window.speechSynthesis.cancel();
+
+  const speech =
+    new SpeechSynthesisUtterance(text);
+
+  speech.lang = "th-TH";
+
+  speech.rate = 0.9;
+
+  speech.pitch = 1;
+
+  window.speechSynthesis.speak(speech);
+
+}
+
+
+/* =========================
+   SOUND BUTTON
+========================= */
+
+soundBtn.addEventListener("click", function() {
+
+  soundEnabled = !soundEnabled;
+
+  if (soundEnabled) {
+
+    soundBtn.innerHTML = "🔊 เสียง";
+
+    speak("เปิดเสียงแล้ว");
+
+  } else {
+
+    window.speechSynthesis.cancel();
+
+    soundBtn.innerHTML = "🔇 ปิดเสียง";
+
+  }
+
+});
+
+
+/* =========================
+   LEVEL BUTTON
+========================= */
+
+document
+.querySelectorAll(".levelBtn")
+.forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    document
+    .querySelectorAll(".levelBtn")
+    .forEach(function(btn) {
+
+      btn.classList.remove("active");
+
+    });
+
+    button.classList.add("active");
+
+    selectedLevel =
+      button.dataset.level;
+
+  });
+
+});
+
+
+/* =========================
+   FEEDBACK
+========================= */
+
+function showFeedback(
+  text,
+  success
+) {
+
+  feedback.innerText = text;
+
+  feedback.style.display = "block";
+
+  if (success) {
+
+    feedback.style.background =
+      "#16a34a";
+
+  } else {
+
+    feedback.style.background =
+      "#dc2626";
+
+  }
+
+  setTimeout(function() {
+
+    feedback.style.display =
+      "none";
+
+  }, 1500);
+
+}
+
+
+/* =========================
+   SPAWN FOOD
+========================= */
+
+function spawnItem() {
+
+  if (!gameRunning) return;
+
+  const food =
+    foodList[
+      Math.floor(
+        Math.random()
+        * foodList.length
+      )
+    ];
+
+  const settings =
+    getLevelSettings();
+
+  items.push({
+
+    ...food,
+
+    x:
+      Math.random() * 0.6
+      + 0.2,
+
+    y: -0.05,
+
+    speed:
+      settings.speed
+      +
+      Math.random()
+      * settings.speed,
+
+    held: false
+
+  });
+
+}
+
+
+/* =========================
+   START GAME
+========================= */
+
+async function startGame() {
+
+  try {
+
+    startBtn.disabled = true;
+
+    statusText.innerText =
+      "กำลังเปิดกล้อง... 📷";
+
+    /*
+    ต้องขอสิทธิ์กล้อง
+    จากการกดปุ่มของผู้ใช้
+    เพื่อให้ iPhone รองรับ
+    */
+
+    await navigator.mediaDevices.getUserMedia({
+
+      video: {
+        facingMode: "user"
+      },
+
+      audio: false
+
+    });
+
+    score = 0;
+
+    scoreText.innerText = score;
+
+    items = [];
+
+    draggedItem = null;
+
+    gameRunning = true;
+
+    startOverlay.style.display =
+      "none";
+
+
+    if (!cameraStarted) {
+
+      setupMediaPipe();
+
+      cameraStarted = true;
+
+    }
+
+    speak("เริ่มเกมได้เลยค่ะ");
+
+    spawnItem();
+
+  }
+
+  catch(error) {
+
+    console.error(error);
+
+    startBtn.disabled = false;
+
+    statusText.innerText =
+      "ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการใช้กล้องใน Safari";
+
+  }
+
+}
+
+
+/* =========================
+   START BUTTON
+========================= */
+
+startBtn.addEventListener(
+  "click",
+  startGame
+);
+
+
+/* =========================
+   MEDIAPIPE
+========================= */
+
+function setupMediaPipe() {
+
+  hands =
+    new Hands({
+
+      locateFile:
+        function(file) {
+
+          return
+          "https://cdn.jsdelivr.net/npm/@mediapipe/hands/"
+          + file;
+
+        }
+
+    });
+
+
+  hands.setOptions({
+
+    maxNumHands: 1,
+
+    modelComplexity: 0,
+
+    minDetectionConfidence:
+      0.5,
+
+    minTrackingConfidence:
+      0.5
+
+  });
+
+
+  hands.onResults(
+    onResults
+  );
+
+
+  camera =
+    new Camera(
+
+      video,
+
+      {
+
+        onFrame:
+          async function() {
+
+            await hands.send({
+
+              image: video
